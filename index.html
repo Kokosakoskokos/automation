@@ -1,78 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Podcast Automation Dashboard</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-  h1, h2 { color: #333; }
-  .section { background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-  th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
-  th { background: #007bff; color: white; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Automation Dashboard - Dark Mode</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #bb86fc;
+    }
+    section {
+      margin-bottom: 2em;
+      background-color: #1e1e1e;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #3700b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #333;
+      text-align: left;
+    }
+    th {
+      background-color: #3700b3;
+      color: white;
+    }
+    #error {
+      color: #cf6679;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
+  <h1>Automation Dashboard</h1>
 
-<h1>Podcast Automation Dashboard</h1>
+  <section id="channels-section">
+    <h2>Channels Stats</h2>
+    <table id="channels-table">
+      <thead>
+        <tr>
+          <th>Channel Name</th>
+          <th>Uploads Today</th>
+          <th>API Used</th>
+          <th>Clips Generated</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="channels-error"></div>
+  </section>
 
-<div class="section" id="channels-section">
-  <h2>Channels Overview</h2>
-</div>
+  <section id="server-section">
+    <h2>Server Stats</h2>
+    <table id="server-table">
+      <tbody></tbody>
+    </table>
+    <div id="server-error"></div>
+  </section>
 
-<div class="section" id="server-stats-section">
-  <h2>Server Statistics</h2>
-</div>
+  <script>
+    const channelsUrl = 'https://raw.githubusercontent.com/Kokosakoskokos/automation/main/channels.json';
+    const serverStatsUrl = 'https://raw.githubusercontent.com/Kokosakoskokos/automation/main/server_stats.json';
 
-<script>
-  // Sample placeholder data
-  const channelsData = [
-    { name: "Joe Rogan", uploadsToday: 5, apiUsed: 3, clipsGenerated: 5 },
-    { name: "Channel 2", uploadsToday: 4, apiUsed: 2, clipsGenerated: 4 },
-    { name: "Channel 3", uploadsToday: 3, apiUsed: 1, clipsGenerated: 3 },
-    { name: "Channel 4", uploadsToday: 2, apiUsed: 2, clipsGenerated: 2 },
-    { name: "Channel 5", uploadsToday: 1, apiUsed: 1, clipsGenerated: 1 },
-  ];
+    async function fetchJSON(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error("Fetch error:", err);
+        throw err;
+      }
+    }
 
-  const serverStatsData = {
-    uptimeHours: 6,
-    powerUsageWh: 120, // watt-hours, example
-    lastOn: "2025-08-07 11:00",
-    lastOff: "2025-08-07 17:00"
-  };
+    function populateChannelsTable(data) {
+      const tbody = document.querySelector("#channels-table tbody");
+      tbody.innerHTML = ""; // Clear old rows
 
-  function renderChannels() {
-    const container = document.getElementById("channels-section");
-    channelsData.forEach(ch => {
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <h3>${ch.name}</h3>
-        <table>
-          <tr><th>Uploads Today</th><td>${ch.uploadsToday}</td></tr>
-          <tr><th>API Usage</th><td>${ch.apiUsed}</td></tr>
-          <tr><th>Clips Generated</th><td>${ch.clipsGenerated}</td></tr>
-        </table>
-      `;
-      container.appendChild(div);
-    });
-  }
+      data.forEach(channel => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${channel.name}</td>
+          <td>${channel.uploadsToday}</td>
+          <td>${channel.apiUsed}</td>
+          <td>${channel.clipsGenerated}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
 
-  function renderServerStats() {
-    const container = document.getElementById("server-stats-section");
-    container.innerHTML += `
-      <table>
-        <tr><th>Uptime (hours)</th><td>${serverStatsData.uptimeHours}</td></tr>
-        <tr><th>Power Usage (Wh)</th><td>${serverStatsData.powerUsageWh}</td></tr>
-        <tr><th>Last Power On</th><td>${serverStatsData.lastOn}</td></tr>
-        <tr><th>Last Power Off</th><td>${serverStatsData.lastOff}</td></tr>
-      </table>
-    `;
-  }
+    function populateServerTable(data) {
+      const tbody = document.querySelector("#server-table tbody");
+      tbody.innerHTML = ""; // Clear old rows
 
-  renderChannels();
-  renderServerStats();
-</script>
+      Object.entries(data).forEach(([key, value]) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <th style="width:50%; text-transform: capitalize;">${key.replace(/([A-Z])/g, ' $1')}</th>
+          <td>${value}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
 
+    async function loadDashboard() {
+      // Channels
+      try {
+        const channelsData = await fetchJSON(channelsUrl);
+        populateChannelsTable(channelsData);
+        document.getElementById("channels-error").textContent = "";
+      } catch (e) {
+        document.getElementById("channels-error").textContent = "Failed to load channels data.";
+      }
+
+      // Server Stats
+      try {
+        const serverData = await fetchJSON(serverStatsUrl);
+        populateServerTable(serverData);
+        document.getElementById("server-error").textContent = "";
+      } catch (e) {
+        document.getElementById("server-error").textContent = "Failed to load server stats.";
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", loadDashboard);
+  </script>
 </body>
 </html>
