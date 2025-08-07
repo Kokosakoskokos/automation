@@ -6,9 +6,8 @@
 <title>Podcast Automation Dashboard</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-  h1 { color: #333; }
-  .channel { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-  .channel h2 { margin-top: 0; }
+  h1, h2 { color: #333; }
+  .section { background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
   table { width: 100%; border-collapse: collapse; margin-top: 10px; }
   th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
   th { background: #007bff; color: white; }
@@ -18,43 +17,61 @@
 
 <h1>Podcast Automation Dashboard</h1>
 
-<div id="dashboard"></div>
+<div class="section" id="channels-section">
+  <h2>Channels Overview</h2>
+</div>
+
+<div class="section" id="server-stats-section">
+  <h2>Server Statistics</h2>
+</div>
 
 <script>
-  // Sample placeholder data - replace with your real data fetched from logs in future
-  const data = {
-    channels: [
-      { name: "Joe Rogan", uploadsToday: 5, apiUsed: 3, clipsGenerated: 5, uptimeHours: 6 },
-      { name: "Channel 2", uploadsToday: 4, apiUsed: 2, clipsGenerated: 4, uptimeHours: 6 },
-      { name: "Channel 3", uploadsToday: 3, apiUsed: 1, clipsGenerated: 3, uptimeHours: 6 },
-      { name: "Channel 4", uploadsToday: 2, apiUsed: 2, clipsGenerated: 2, uptimeHours: 6 },
-      { name: "Channel 5", uploadsToday: 1, apiUsed: 1, clipsGenerated: 1, uptimeHours: 6 },
-    ],
+  // Sample placeholder data
+  const channelsData = [
+    { name: "Joe Rogan", uploadsToday: 5, apiUsed: 3, clipsGenerated: 5 },
+    { name: "Channel 2", uploadsToday: 4, apiUsed: 2, clipsGenerated: 4 },
+    { name: "Channel 3", uploadsToday: 3, apiUsed: 1, clipsGenerated: 3 },
+    { name: "Channel 4", uploadsToday: 2, apiUsed: 2, clipsGenerated: 2 },
+    { name: "Channel 5", uploadsToday: 1, apiUsed: 1, clipsGenerated: 1 },
+  ];
+
+  const serverStatsData = {
+    uptimeHours: 6,
+    powerUsageWh: 120, // watt-hours, example
+    lastOn: "2025-08-07 11:00",
+    lastOff: "2025-08-07 17:00"
   };
 
-  function renderDashboard() {
-    const container = document.getElementById("dashboard");
-    container.innerHTML = "";
-
-    data.channels.forEach((ch) => {
+  function renderChannels() {
+    const container = document.getElementById("channels-section");
+    channelsData.forEach(ch => {
       const div = document.createElement("div");
-      div.className = "channel";
-
       div.innerHTML = `
-        <h2>${ch.name}</h2>
+        <h3>${ch.name}</h3>
         <table>
           <tr><th>Uploads Today</th><td>${ch.uploadsToday}</td></tr>
           <tr><th>API Usage</th><td>${ch.apiUsed}</td></tr>
           <tr><th>Clips Generated</th><td>${ch.clipsGenerated}</td></tr>
-          <tr><th>Server Uptime (hours)</th><td>${ch.uptimeHours}</td></tr>
         </table>
       `;
-
       container.appendChild(div);
     });
   }
 
-  renderDashboard();
+  function renderServerStats() {
+    const container = document.getElementById("server-stats-section");
+    container.innerHTML += `
+      <table>
+        <tr><th>Uptime (hours)</th><td>${serverStatsData.uptimeHours}</td></tr>
+        <tr><th>Power Usage (Wh)</th><td>${serverStatsData.powerUsageWh}</td></tr>
+        <tr><th>Last Power On</th><td>${serverStatsData.lastOn}</td></tr>
+        <tr><th>Last Power Off</th><td>${serverStatsData.lastOff}</td></tr>
+      </table>
+    `;
+  }
+
+  renderChannels();
+  renderServerStats();
 </script>
 
 </body>
