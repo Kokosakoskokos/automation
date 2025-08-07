@@ -1,0 +1,58 @@
+{
+  "lastUpdate": "2025-08-07T20:00:00Z",
+
+  "serverStats": {
+    "uptimeHours": 6.5,
+    "powerUsageWh": 150,
+    "lastBoot": "2025-08-07T13:30:00Z",
+    "lastShutdown": "2025-08-07T19:45:00Z"
+  },
+
+  "channels": [
+    {
+      "name": "Channel1",
+      "apiCount": 5,
+      "uploadsToday": 7,
+      "scheduledUploads": 3,
+      "totalViews": 45230,
+      "subscribers": 12500,
+      "lastClipCreated": "2025-08-07T18:15:00Z"
+    },
+    {
+      "name": "Channel2",
+      "apiCount": 5,
+      "uploadsToday": 10,
+      "scheduledUploads": 0,
+      "totalViews": 23890,
+      "subscribers": 7300,
+      "lastClipCreated": "2025-08-07T17:30:00Z"
+    },
+    {
+      "name": "Channel3",
+      "apiCount": 5,
+      "uploadsToday": 5,
+      "scheduledUploads": 1,
+      "totalViews": 19800,
+      "subscribers": 5100,
+      "lastClipCreated": "2025-08-07T19:00:00Z"
+    },
+    {
+      "name": "Channel4",
+      "apiCount": 5,
+      "uploadsToday": 6,
+      "scheduledUploads": 2,
+      "totalViews": 16500,
+      "subscribers": 4800,
+      "lastClipCreated": "2025-08-07T18:45:00Z"
+    },
+    {
+      "name": "Channel5",
+      "apiCount": 5,
+      "uploadsToday": 8,
+      "scheduledUploads": 1,
+      "totalViews": 22000,
+      "subscribers": 6200,
+      "lastClipCreated": "2025-08-07T18:50:00Z"
+    }
+  ]
+}
