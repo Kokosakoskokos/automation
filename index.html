@@ -3,1247 +3,635 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Podcast Manager</title>
+    <title>Podcast Automation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         primary: {
-                            500: '#6366f1',
-                            600: '#4f46e5',
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
                         },
                         dark: {
                             800: '#1e293b',
                             900: '#0f172a',
-                        },
-                        slate: {
-                            800: '#1e293b',
-                            900: '#0f172a',
                         }
                     },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'blink': 'blink 1.5s steps(5, start) infinite',
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
                     },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        blink: {
-                            '0%, 100%': { opacity: '1' },
-                            '50%': { opacity: '0.3' },
-                        }
-                    }
                 }
             }
         }
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
         .progress-bar {
-            height: 6px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.5s ease;
         }
-        .episode-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
         }
-        .channel-tab.active {
-            border-bottom: 3px solid #6366f1;
-            color: #6366f1;
-        }
-        .glow {
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
         .glass-effect {
-            background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(15, 23, 42, 0.8);
         }
-        .neumorphic {
-            border-radius: 16px;
-            box-shadow: 8px 8px 16px #0b1120, -8px -8px 16px #1e293b;
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(90deg, #6366f1, #8b5cf6);
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-        .spinner {
-            animation: spin 1.5s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
-<body class="dark bg-slate-900 text-slate-200 min-h-screen gradient-bg">
-    <div class="min-h-screen">
+<body class="bg-dark-900 text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
         <!-- Header -->
-        <header class="glass-effect shadow-lg">
-            <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <i class="fas fa-podcast text-primary-500 text-2xl transform rotate-12"></i>
-                        <div class="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                    </div>
-                    <h1 class="text-xl font-bold text-white">Podcast<span class="text-primary-500">Manager</span></h1>
+        <header class="glass-effect rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center border border-gray-800">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl shadow-lg">
+                    <i class="fas fa-podcast text-white text-2xl"></i>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button id="addChannelBtn" class="btn-primary group">
-                        <span class="group-hover:rotate-90 transition-transform duration-300">
-                            <i class="fas fa-plus"></i>
-                        </span>
-                        <span>Add Channel</span>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Podcast<span class="gradient-text">Automator</span></h1>
+                    <p class="text-xs text-gray-400">Streamline your podcast workflow</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="syncNowBtn" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-4 py-2 rounded-lg flex items-center smooth-transition shadow-lg hover:shadow-indigo-500/20">
+                    <i class="fas fa-sync-alt mr-2"></i> Sync Now
+                </button>
+                <div class="relative">
+                    <button id="settingsBtn" class="p-2 hover:bg-gray-800 rounded-xl smooth-transition">
+                        <i class="fas fa-cog text-lg"></i>
                     </button>
-                    <div class="relative">
-                        <button id="settingsBtn" class="btn-icon hover:bg-slate-800 hover:text-primary-500">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                        <div id="settingsDropdown" class="dropdown-menu hidden">
-                            <a href="#" class="dropdown-item hover:bg-slate-800 hover:text-primary-500">
-                                <i class="fas fa-cog mr-2"></i> Settings
-                            </a>
-                            <a href="#" class="dropdown-item hover:bg-slate-800 hover:text-primary-500">
-                                <i class="fas fa-list-alt mr-2"></i> Logs
-                            </a>
-                            <a href="#" class="dropdown-item hover:bg-slate-800 hover:text-primary-500">
-                                <i class="fas fa-database mr-2"></i> Backup/Restore
-                            </a>
-                            <a href="#" class="dropdown-item hover:bg-slate-800 hover:text-primary-500">
-                                <i class="fas fa-sync-alt mr-2"></i> Update System
-                            </a>
-                            <a href="#" class="dropdown-item hover:bg-slate-800 hover:text-primary-500">
-                                <i class="fas fa-bell mr-2"></i> Alert Settings
-                            </a>
-                            <a href="#" class="dropdown-item hover:bg-slate-800 hover:text-primary-500">
-                                <i class="fas fa-question-circle mr-2"></i> Help
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-            <!-- Status Bar -->
-            <div class="neumorphic rounded-xl p-5">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div class="flex items-center space-x-6">
-                        <div class="flex items-center space-x-2">
-                            <div class="h-3 w-3 rounded-full bg-green-500 animate-pulse"></div>
-                            <span class="text-sm font-medium">Active</span>
+        <!-- System Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- CPU Card -->
+            <div class="bg-dark-800 rounded-xl p-5 border border-gray-800 card-hover smooth-transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-blue-900/50 p-2 rounded-lg">
+                            <i class="fas fa-microchip text-blue-400 text-lg"></i>
                         </div>
-                        <div class="text-sm text-slate-400">
-                            Last sync: <span id="lastSyncTime" class="text-white">Just now</span>
-                        </div>
-                        <button id="viewLogsBtn" class="text-primary-500 hover:text-primary-400 text-sm flex items-center">
-                            <i class="fas fa-list-alt mr-1"></i> View Logs
-                        </button>
+                        <span class="font-medium">CPU Usage</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <div class="meter-item">
-                            <div class="flex items-center justify-between text-sm mb-1">
-                                <div class="flex items-center">
-                                    <i class="fas fa-hdd mr-2 text-blue-400"></i>
-                                    <span>Storage</span>
-                                </div>
-                                <span id="storageValue" class="font-medium">12.4/20 GB</span>
-                            </div>
-                            <div class="w-full bg-slate-800 rounded-full h-2">
-                                <div id="storageBar" class="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-300" style="width: 65%"></div>
-                            </div>
+                    <span id="cpuUsage" class="font-mono bg-blue-900/20 px-2 py-1 rounded text-sm">--%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-2">
+                    <div id="cpuBar" class="h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-400 progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="text-xs text-gray-400 mt-1" id="cpuCores"></div>
+            </div>
+
+            <!-- Memory Card -->
+            <div class="bg-dark-800 rounded-xl p-5 border border-gray-800 card-hover smooth-transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-purple-900/50 p-2 rounded-lg">
+                            <i class="fas fa-memory text-purple-400 text-lg"></i>
                         </div>
-                        <div class="meter-item">
-                            <div class="flex items-center justify-between text-sm mb-1">
-                                <div class="flex items-center">
-                                    <i class="fas fa-bolt mr-2 text-yellow-400"></i>
-                                    <span>Power</span>
-                                </div>
-                                <span id="powerValue" class="font-medium">42W</span>
-                            </div>
-                            <div class="w-full bg-slate-800 rounded-full h-2">
-                                <div id="powerBar" class="h-2 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-300" style="width: 42%"></div>
-                            </div>
-                        </div>
-                        <div class="meter-item">
-                            <div class="flex items-center justify-between text-sm mb-1">
-                                <div class="flex items-center">
-                                    <i class="fab fa-youtube mr-2 text-red-400"></i>
-                                    <span>API Quota</span>
-                                </div>
-                                <span id="apiQuotaValue" class="font-medium">3/5 keys</span>
-                            </div>
-                            <div class="w-full bg-slate-800 rounded-full h-2">
-                                <div id="apiQuotaBar" class="h-2 rounded-full bg-gradient-to-r from-red-500 to-red-300" style="width: 60%"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <button id="manualSyncBtn" class="btn-primary group">
-                                <span class="group-hover:animate-spin">
-                                    <i class="fas fa-sync-alt"></i>
-                                </span>
-                                <span>Sync Now</span>
-                            </button>
-                            <button id="statsBtn" class="btn-icon hover:bg-slate-800 hover:text-primary-500 relative group">
-                                <i class="fas fa-chart-bar"></i>
-                                <div id="performanceSummary" class="absolute hidden group-hover:block bottom-full right-0 mb-2 w-64 bg-slate-800 rounded-lg shadow-xl p-4 z-10 border border-slate-700">
-                                    <div class="text-sm space-y-2">
-                                        <div class="flex justify-between">
-                                            <span class="text-slate-400">Today's Top:</span>
-                                            <span id="topPerformer" class="font-medium">Tech Talk (+1.2k)</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-slate-400">System Health:</span>
-                                            <span class="text-green-400 font-medium">Optimal</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
+                        <span class="font-medium">Memory</span>
                     </div>
+                    <span id="memoryUsage" class="font-mono bg-purple-900/20 px-2 py-1 rounded text-sm">--/-- GB</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-2">
+                    <div id="memoryBar" class="h-2.5 rounded-full bg-gradient-to-r from-purple-500 to-purple-400 progress-bar" style="width: 0%"></div>
                 </div>
             </div>
 
-            <!-- Channel Tabs -->
-            <div class="neumorphic rounded-xl p-1">
-                <nav class="flex space-x-1 overflow-x-auto custom-scrollbar">
-                    <button class="channel-tab active px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300">
-                        <i class="fas fa-layer-group mr-2"></i> All Channels
-                    </button>
-                    <button class="channel-tab px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300 hover:bg-slate-800">
-                        <i class="fas fa-microchip mr-2"></i> Tech Talk
-                    </button>
-                    <button class="channel-tab px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300 hover:bg-slate-800">
-                        <i class="fas fa-atom mr-2"></i> Science Weekly
-                    </button>
-                    <button class="channel-tab px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300 hover:bg-slate-800">
-                        <i class="fas fa-chart-line mr-2"></i> Business Insights
-                    </button>
-                    <button class="channel-tab px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300 hover:bg-slate-800">
-                        <i class="fas fa-heartbeat mr-2"></i> Health Matters
-                    </button>
-                    <button class="channel-tab px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300 hover:bg-slate-800">
-                        <i class="fas fa-cut mr-2"></i> Clips
-                    </button>
-                </nav>
+            <!-- Storage Card -->
+            <div class="bg-dark-800 rounded-xl p-5 border border-gray-800 card-hover smooth-transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-green-900/50 p-2 rounded-lg">
+                            <i class="fas fa-hdd text-green-400 text-lg"></i>
+                        </div>
+                        <span class="font-medium">Storage</span>
+                    </div>
+                    <span id="storageUsage" class="font-mono bg-green-900/20 px-2 py-1 rounded text-sm">--/-- GB</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-2">
+                    <div id="storageBar" class="h-2.5 rounded-full bg-gradient-to-r from-green-500 to-green-400 progress-bar" style="width: 0%"></div>
+                </div>
             </div>
+        </div>
 
-            <!-- Current Activity -->
-            <div class="neumorphic rounded-xl p-5">
-                <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-lg font-semibold text-white flex items-center">
-                        <i class="fas fa-bolt text-yellow-400 mr-2 animate-pulse"></i> Current Activity
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Activity Feed -->
+            <div class="bg-dark-800 rounded-xl shadow-lg p-6 border border-gray-800 lg:col-span-2">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold flex items-center">
+                        <div class="bg-yellow-900/50 p-2 rounded-lg mr-3">
+                            <i class="fas fa-tasks text-yellow-400"></i>
+                        </div>
+                        <span>Current Activities</span>
                     </h2>
                     <div class="flex items-center space-x-2">
-                        <span class="text-xs text-slate-400">Auto-refresh in <span id="refreshCountdown">30</span>s</span>
-                        <button class="btn-icon hover:bg-slate-800 hover:text-primary-500">
+                        <span class="text-sm text-gray-400" id="lastSync">
+                            Last sync: <span class="text-white font-medium">Never</span>
+                        </span>
+                        <button class="text-gray-400 hover:text-white smooth-transition">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
                 </div>
-                <div class="space-y-4">
-                    <!-- Activity Item 1 -->
-                    <div class="activity-item">
-                        <div class="activity-indicator bg-blue-500 animate-pulse-slow"></div>
-                        <div class="activity-details">
-                            <div class="activity-header">
-                                <p class="activity-title">Downloading: Tech Talk #245 - AI Revolution</p>
-                                <span class="activity-time">2 min ago</span>
-                            </div>
-                            <div class="progress-container">
-                                <div class="progress-bar bg-gradient-to-r from-blue-500 to-blue-300" style="width: 45%"></div>
-                                <div class="progress-info">
-                                    <span>45% complete</span>
-                                    <span>ETA: 3 min</span>
-                                </div>
-                            </div>
+
+                <div id="activitiesContainer" class="space-y-4">
+                    <!-- Activities will be inserted here by JavaScript -->
+                    <div class="text-center py-8 text-gray-500" id="noActivities">
+                        <div class="animate-float inline-block mb-3">
+                            <i class="fas fa-circle-notch fa-spin text-3xl text-primary-400"></i>
                         </div>
-                    </div>
-                    
-                    <!-- Activity Item 2 -->
-                    <div class="activity-item">
-                        <div class="activity-indicator bg-green-500 animate-pulse-slow"></div>
-                        <div class="activity-details">
-                            <div class="activity-header">
-                                <p class="activity-title">Processing: Science Weekly #187 - Quantum Computing</p>
-                                <span class="activity-time">5 min ago</span>
-                            </div>
-                            <div class="progress-container">
-                                <div class="progress-bar bg-gradient-to-r from-green-500 to-green-300" style="width: 78%"></div>
-                                <div class="progress-info">
-                                    <span>78% complete</span>
-                                    <span>ETA: 1 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Activity Item 3 -->
-                    <div class="activity-item">
-                        <div class="activity-indicator bg-yellow-500 animate-pulse-slow"></div>
-                        <div class="activity-details">
-                            <div class="activity-header">
-                                <p class="activity-title">Creating Clip: "AI Breakthrough" from Tech Talk #245</p>
-                                <span class="activity-time">1 min ago</span>
-                            </div>
-                            <div class="progress-container">
-                                <div class="progress-bar bg-gradient-to-r from-yellow-500 to-yellow-300" style="width: 35%"></div>
-                                <div class="progress-info">
-                                    <span>35% complete</span>
-                                    <span>ETA: 2 min</span>
-                                </div>
-                            </div>
-                        </div>
+                        <p class="text-gray-400">Loading activities...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Episodes Grid -->
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-white flex items-center">
-                        <i class="fas fa-podcast text-primary-500 mr-2"></i> Recent Episodes
+            <!-- Quick Stats -->
+            <div class="bg-dark-800 rounded-xl shadow-lg p-6 border border-gray-800">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold flex items-center">
+                        <div class="bg-indigo-900/50 p-2 rounded-lg mr-3">
+                            <i class="fas fa-chart-line text-indigo-400"></i>
+                        </div>
+                        <span>Podcast Stats</span>
                     </h2>
-                    <div class="flex space-x-2">
-                        <button class="filter-btn active">All</button>
-                        <button class="filter-btn">Today</button>
-                        <button class="filter-btn">This Week</button>
-                        <button class="filter-btn">
-                            <i class="fas fa-sliders-h"></i>
-                        </button>
-                    </div>
+                    <select class="bg-dark-700 border border-gray-700 text-sm rounded-lg px-3 py-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 90 days</option>
+                    </select>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                    <!-- Episode Card 1 -->
-                    <div class="episode-card neumorphic rounded-xl overflow-hidden transition-all duration-300 hover:glow">
-                        <div class="episode-thumbnail relative">
-                            <img src="https://source.unsplash.com/random/400x225/?tech,ai" alt="Episode thumbnail" class="w-full h-48 object-cover">
-                            <div class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                                45:32
+                <div class="space-y-5">
+                    <div class="bg-dark-700/50 p-4 rounded-lg border border-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400">Total Episodes</p>
+                                <p class="text-2xl font-bold" id="totalEpisodes">--</p>
                             </div>
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-800">
-                                <div class="h-full bg-primary-500" style="width: 72%"></div>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="episode-header">
-                                <h3 class="episode-title font-medium text-white line-clamp-1">Tech Talk #245 - AI Revolution</h3>
-                                <span class="episode-time text-xs text-slate-400">2h ago</span>
-                            </div>
-                            <p class="episode-description text-sm text-slate-400 mt-2 line-clamp-2">
-                                Exploring the latest advancements in artificial intelligence and machine learning.
-                            </p>
-                            <div class="episode-footer flex items-center justify-between mt-4">
-                                <span class="channel-badge bg-blue-900 bg-opacity-30 text-blue-400 px-2 py-1 rounded-full text-xs">
-                                    Tech Talk
-                                </span>
-                                <div class="episode-actions flex space-x-2">
-                                    <button class="action-btn hover:text-blue-400">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-green-400">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-red-400">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                            <div class="bg-indigo-900/20 p-3 rounded-lg">
+                                <i class="fas fa-podcast text-indigo-400 text-xl"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Episode Card 2 -->
-                    <div class="episode-card neumorphic rounded-xl overflow-hidden transition-all duration-300 hover:glow">
-                        <div class="episode-thumbnail relative">
-                            <img src="https://source.unsplash.com/random/400x225/?science,quantum" alt="Episode thumbnail" class="w-full h-48 object-cover">
-                            <div class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                                32:18
+                    <div class="bg-dark-700/50 p-4 rounded-lg border border-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400">Avg. Listeners</p>
+                                <p class="text-2xl font-bold" id="avgListeners">--</p>
                             </div>
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-800">
-                                <div class="h-full bg-purple-500" style="width: 45%"></div>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="episode-header">
-                                <h3 class="episode-title font-medium text-white line-clamp-1">Science Weekly #187 - Quantum Computing</h3>
-                                <span class="episode-time text-xs text-slate-400">5h ago</span>
-                            </div>
-                            <p class="episode-description text-sm text-slate-400 mt-2 line-clamp-2">
-                                Breaking down quantum computing concepts for everyday understanding.
-                            </p>
-                            <div class="episode-footer flex items-center justify-between mt-4">
-                                <span class="channel-badge bg-purple-900 bg-opacity-30 text-purple-400 px-2 py-1 rounded-full text-xs">
-                                    Science Weekly
-                                </span>
-                                <div class="episode-actions flex space-x-2">
-                                    <button class="action-btn hover:text-blue-400">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-green-400">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-red-400">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                            <div class="bg-green-900/20 p-3 rounded-lg">
+                                <i class="fas fa-headphones text-green-400 text-xl"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Episode Card 3 -->
-                    <div class="episode-card neumorphic rounded-xl overflow-hidden transition-all duration-300 hover:glow">
-                        <div class="episode-thumbnail relative">
-                            <img src="https://source.unsplash.com/random/400x225/?business,finance" alt="Episode thumbnail" class="w-full h-48 object-cover">
-                            <div class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                                58:42
+                    <div class="bg-dark-700/50 p-4 rounded-lg border border-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400">Subscribers</p>
+                                <p class="text-2xl font-bold" id="totalSubscribers">--</p>
                             </div>
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-800">
-                                <div class="h-full bg-green-500" style="width: 90%"></div>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="episode-header">
-                                <h3 class="episode-title font-medium text-white line-clamp-1">Business Insights #92 - Market Trends</h3>
-                                <span class="episode-time text-xs text-slate-400">1d ago</span>
-                            </div>
-                            <p class="episode-description text-sm text-slate-400 mt-2 line-clamp-2">
-                                Analyzing current market trends and future predictions for investors.
-                            </p>
-                            <div class="episode-footer flex items-center justify-between mt-4">
-                                <span class="channel-badge bg-green-900 bg-opacity-30 text-green-400 px-2 py-1 rounded-full text-xs">
-                                    Business Insights
-                                </span>
-                                <div class="episode-actions flex space-x-2">
-                                    <button class="action-btn hover:text-blue-400">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-green-400">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-red-400">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                            <div class="bg-purple-900/20 p-3 rounded-lg">
+                                <i class="fas fa-users text-purple-400 text-xl"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Episode Card 4 -->
-                    <div class="episode-card neumorphic rounded-xl overflow-hidden transition-all duration-300 hover:glow">
-                        <div class="episode-thumbnail relative">
-                            <img src="https://source.unsplash.com/random/400x225/?health,sleep" alt="Episode thumbnail" class="w-full h-48 object-cover">
-                            <div class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                                41:15
+                    <div class="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 p-4 rounded-lg border border-indigo-900/20 mt-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-indigo-200">Next Episode</p>
+                                <p class="text-lg font-bold" id="nextEpisodeTitle">--</p>
+                                <p class="text-xs text-indigo-300" id="nextEpisodeTime">--</p>
                             </div>
-                            <div class="absolute bottom-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded animate-blink">
-                                Expires in 12h
-                            </div>
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-800">
-                                <div class="h-full bg-red-500" style="width: 60%"></div>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="episode-header">
-                                <h3 class="episode-title font-medium text-white line-clamp-1">Health Matters #63 - Sleep Science</h3>
-                                <span class="episode-time text-xs text-slate-400">2d ago</span>
-                            </div>
-                            <p class="episode-description text-sm text-slate-400 mt-2 line-clamp-2">
-                                The science behind sleep and how to improve your sleep quality.
-                            </p>
-                            <div class="episode-footer flex items-center justify-between mt-4">
-                                <span class="channel-badge bg-red-900 bg-opacity-30 text-red-400 px-2 py-1 rounded-full text-xs">
-                                    Health Matters
-                                </span>
-                                <div class="episode-actions flex space-x-2">
-                                    <button class="action-btn hover:text-blue-400">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-green-400">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-red-400">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                            <div class="bg-white/10 p-3 rounded-lg">
+                                <i class="fas fa-calendar-alt text-white text-xl"></i>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Clip Card -->
-                    <div class="episode-card neumorphic rounded-xl overflow-hidden transition-all duration-300 hover:glow">
-                        <div class="episode-thumbnail relative">
-                            <img src="https://source.unsplash.com/random/400x225/?ai,technology" alt="Clip thumbnail" class="w-full h-48 object-cover">
-                            <div class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                                0:52
-                            </div>
-                            <div class="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
-                                CLIP
-                            </div>
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-800">
-                                <div class="h-full bg-cyan-500" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="episode-header">
-                                <h3 class="episode-title font-medium text-white line-clamp-1">AI Breakthrough Moment</h3>
-                                <span class="episode-time text-xs text-slate-400">30m ago</span>
-                            </div>
-                            <p class="episode-description text-sm text-slate-400 mt-2 line-clamp-2">
-                                From Tech Talk #245 - Key moment about new AI research
-                            </p>
-                            <div class="episode-footer flex items-center justify-between mt-4">
-                                <span class="channel-badge bg-cyan-900 bg-opacity-30 text-cyan-400 px-2 py-1 rounded-full text-xs">
-                                    Tech Talk Clip
-                                </span>
-                                <div class="episode-actions flex space-x-2">
-                                    <button class="action-btn hover:text-blue-400">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-green-400">
-                                        <i class="fas fa-share"></i>
-                                    </button>
-                                    <button class="action-btn hover:text-red-400">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        <!-- Episodes Grid -->
+        <div class="bg-dark-800 rounded-xl shadow-lg p-6 border border-gray-800">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-semibold flex items-center">
+                    <div class="bg-indigo-900/50 p-2 rounded-lg mr-3">
+                        <i class="fas fa-podcast text-indigo-400"></i>
                     </div>
-
-                    <!-- Add Channel Card -->
-                    <div class="add-channel-card neumorphic rounded-xl border-2 border-dashed border-slate-700 hover:border-primary-500 transition-all duration-300 flex items-center justify-center">
-                        <button id="addChannelCardBtn" class="add-channel-btn p-8 w-full h-full flex flex-col items-center justify-center group">
-                            <i class="fas fa-plus-circle text-4xl text-slate-600 group-hover:text-primary-500 mb-3 transition-all duration-300 transform group-hover:scale-110"></i>
-                            <span class="add-channel-text text-slate-400 group-hover:text-white font-medium transition-all duration-300">
-                                Add New Channel
-                            </span>
-                        </button>
-                    </div>
+                    <span>Recent Episodes</span>
+                </h2>
+                <div class="flex space-x-2">
+                    <button class="px-3 py-1 bg-dark-700 hover:bg-dark-600 rounded-lg text-sm smooth-transition border border-gray-700">All</button>
+                    <button class="px-3 py-1 bg-dark-700 hover:bg-dark-600 rounded-lg text-sm smooth-transition border border-gray-700">Today</button>
+                    <button class="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg text-sm smooth-transition flex items-center">
+                        <i class="fas fa-plus mr-1"></i> New
+                    </button>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <!-- Add Channel Modal -->
-    <div id="addChannelModal" class="modal fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="modal-overlay absolute inset-0 bg-black bg-opacity-70"></div>
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="modal-container inline-block align-bottom bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full neumorphic">
-                <div class="modal-content px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="modal-header sm:flex sm:items-start">
-                        <div class="modal-icon mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary-500 bg-opacity-20 sm:mx-0 sm:h-10 sm:w-10">
-                            <i class="fas fa-podcast text-primary-500"></i>
-                        </div>
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-white">Add New Podcast Channel</h3>
-                            <div class="mt-2">
-                                <form id="channelForm" class="space-y-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="form-group">
-                                            <label for="channelName" class="form-label">Channel Name</label>
-                                            <input type="text" id="channelName" class="form-input" placeholder="e.g., Tech Talk">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="youtubeUrl" class="form-label">YouTube URL</label>
-                                            <input type="url" id="youtubeUrl" class="form-input" placeholder="https://www.youtube.com/channel/...">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="form-group">
-                                            <label for="downloadFrequency" class="form-label">Download Frequency</label>
-                                            <select id="downloadFrequency" class="form-input">
-                                                <option value="hourly">Hourly</option>
-                                                <option value="daily" selected>Daily</option>
-                                                <option value="weekly">Weekly</option>
-                                                <option value="manual">Manual Only</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="retentionDays" class="form-label">Retention Period (days)</label>
-                                            <input type="number" id="retentionDays" value="3" min="1" max="30" class="form-input">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="checkbox-group">
-                                        <input id="autoDownload" name="autoDownload" type="checkbox" checked class="checkbox-input">
-                                        <label for="autoDownload" class="checkbox-label">Automatically download new episodes</label>
-                                    </div>
-                                    
-                                    <div class="section-divider border-t border-slate-700 pt-4">
-                                        <h4 class="section-title text-sm font-medium text-white flex items-center">
-                                            <i class="fas fa-cut mr-2 text-primary-500"></i> Clip Creation Settings
-                                        </h4>
-                                        <div class="space-y-3 mt-3">
-                                            <div class="checkbox-group">
-                                                <input id="autoCreateClips" name="autoCreateClips" type="checkbox" checked class="checkbox-input">
-                                                <label for="autoCreateClips" class="checkbox-label">Automatically create clips</label>
-                                            </div>
-                                            <div class="checkbox-group">
-                                                <input id="generateSubtitles" name="generateSubtitles" type="checkbox" checked class="checkbox-input">
-                                                <label for="generateSubtitles" class="checkbox-label">Generate burned-in subtitles (Whisper)</label>
-                                            </div>
-                                            <div class="checkbox-group">
-                                                <input id="autoGenerateTitles" name="autoGenerateTitles" type="checkbox" checked class="checkbox-input">
-                                                <label for="autoGenerateTitles" class="checkbox-label">Auto-generate titles from transcript</label>
-                                                <p class="form-note">Using local LLaMA/GPT4All</p>
-                                            </div>
-                                            <div class="checkbox-group">
-                                                <input id="autoGenerateHashtags" name="autoGenerateHashtags" type="checkbox" checked class="checkbox-input">
-                                                <label for="autoGenerateHashtags" class="checkbox-label">Auto-generate hashtags & description</label>
-                                                <p class="form-note">With daily hashtag rotation</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="section-divider border-t border-slate-700 pt-4">
-                                        <h4 class="section-title text-sm font-medium text-white flex items-center">
-                                            <i class="fas fa-sliders-h mr-2 text-primary-500"></i> Channel-Specific Rules
-                                        </h4>
-                                        <div class="space-y-3 mt-3">
-                                            <div class="checkbox-group">
-                                                <input id="customRules" name="customRules" type="checkbox" class="checkbox-input">
-                                                <label for="customRules" class="checkbox-label">Enable custom rules for this channel</label>
-                                            </div>
-                                            <div id="customRulesOptions" class="custom-rules-options ml-7 pl-4 border-l-2 border-slate-700 space-y-3 hidden">
-                                                <div class="form-group">
-                                                    <label for="uploadTime" class="form-label">Preferred Upload Time</label>
-                                                    <input type="time" id="uploadTime" class="form-input">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="hashtagGroup" class="form-label">Hashtag Group</label>
-                                                    <select id="hashtagGroup" class="form-input">
-                                                        <option value="tech">Tech</option>
-                                                        <option value="science">Science</option>
-                                                        <option value="business">Business</option>
-                                                        <option value="health">Health</option>
-                                                        <option value="custom">Custom</option>
-                                                    </select>
-                                                </div>
-                                                <div id="customHashtagsGroup" class="form-group hidden">
-                                                    <label for="customHashtags" class="form-label">Custom Hashtags</label>
-                                                    <textarea id="customHashtags" rows="2" class="form-input" placeholder="#tech #ai #machinelearning"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="section-divider border-t border-slate-700 pt-4">
-                                        <h4 class="section-title text-sm font-medium text-white flex items-center">
-                                            <i class="fas fa-image mr-2 text-primary-500"></i> Thumbnail & Branding
-                                        </h4>
-                                        <div class="space-y-3 mt-3">
-                                            <div class="checkbox-group">
-                                                <input id="autoCreateThumbnails" name="autoCreateThumbnails" type="checkbox" checked class="checkbox-input">
-                                                <label for="autoCreateThumbnails" class="checkbox-label">Auto-create thumbnails</label>
-                                                <p class="form-note">Using FFmpeg + ImageMagick</p>
-                                            </div>
-                                            <div class="checkbox-group">
-                                                <input id="useFaceDetection" name="useFaceDetection" type="checkbox" checked class="checkbox-input">
-                                                <label for="useFaceDetection" class="checkbox-label">Use face detection</label>
-                                                <p class="form-note">For better thumbnail selection (OpenCV)</p>
-                                            </div>
-                                            <div class="checkbox-group">
-                                                <input id="addBrandOverlay" name="addBrandOverlay" type="checkbox" class="checkbox-input">
-                                                <label for="addBrandOverlay" class="checkbox-label">Add branding overlay</label>
-                                                <p class="form-note">Small corner logo/text</p>
-                                            </div>
-                                            <div id="brandingOptions" class="branding-options ml-7 pl-4 border-l-2 border-slate-700 space-y-3 hidden">
-                                                <div class="form-group">
-                                                    <label for="brandText" class="form-label">Brand Text</label>
-                                                    <input type="text" id="brandText" class="form-input" placeholder="Your Brand">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="brandPosition" class="form-label">Position</label>
-                                                    <select id="brandPosition" class="form-input">
-                                                        <option value="top-right">Top Right</option>
-                                                        <option value="bottom-right">Bottom Right</option>
-                                                        <option value="bottom-left">Bottom Left</option>
-                                                        <option value="top-left">Top Left</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="form-group">
-                                            <label for="maxClipsPerDay" class="form-label">Max clips/day</label>
-                                            <input type="number" id="maxClipsPerDay" value="10" min="1" max="20" class="form-input">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="clipDuration" class="form-label">Clip duration (sec)</label>
-                                            <select id="clipDuration" class="form-input">
-                                                <option value="40-60">40-60 (adaptive)</option>
-                                                <option value="30">30</option>
-                                                <option value="45">45</option>
-                                                <option value="60">60</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="checkbox-group">
-                                        <input id="addHookText" name="addHookText" type="checkbox" checked class="checkbox-input">
-                                        <label for="addHookText" class="checkbox-label">Add hook text overlay</label>
-                                        <p class="form-note">"Wait till you hear this..." in first 3 seconds</p>
-                                    </div>
-                                    
-                                    <div class="section-divider border-t border-slate-700 pt-4">
-                                        <h4 class="section-title text-sm font-medium text-white flex items-center">
-                                            <i class="fas fa-broom mr-2 text-primary-500"></i> Cleanup & Maintenance
-                                        </h4>
-                                        <div class="space-y-3 mt-3">
-                                            <div class="checkbox-group">
-                                                <input id="autoCleanTemp" name="autoCleanTemp" type="checkbox" checked class="checkbox-input">
-                                                <label for="autoCleanTemp" class="checkbox-label">Auto-clean temp files</label>
-                                                <p class="form-note">Delete downloads, transcripts, and temp clips after processing</p>
-                                            </div>
-                                            <div class="checkbox-group">
-                                                <input id="enableAlerts" name="enableAlerts" type="checkbox" checked class="checkbox-input">
-                                                <label for="enableAlerts" class="checkbox-label">Enable error alerts</label>
-                                                <p class="form-note">Get instant notifications via Telegram/Discord</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+            <div id="episodesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Episodes will be inserted here by JavaScript -->
+                <div class="text-center py-8 text-gray-500 col-span-full">
+                    <div class="animate-float inline-block mb-3">
+                        <i class="fas fa-circle-notch fa-spin text-3xl text-primary-400"></i>
                     </div>
-                </div>
-                <div class="modal-footer bg-slate-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" id="saveChannelBtn" class="btn-primary w-full sm:w-auto sm:ml-3">
-                        <i class="fas fa-save mr-2"></i> Save Channel
-                    </button>
-                    <button type="button" id="cancelAddChannelBtn" class="btn-secondary mt-3 sm:mt-0">
-                        Cancel
-                    </button>
+                    <p class="text-gray-400">Loading episodes...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Stats Modal -->
-    <div id="statsModal" class="modal fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="modal-overlay absolute inset-0 bg-black bg-opacity-70"></div>
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="modal-container inline-block align-bottom bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full neumorphic">
-                <div class="modal-content px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="modal-header">
-                        <h3 class="text-lg leading-6 font-medium text-white mb-6 flex items-center">
-                            <i class="fas fa-chart-line text-primary-500 mr-2"></i> System Analytics & Performance
-                        </h3>
-                        <div class="stats-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Top Clips -->
-                            <div class="stats-card bg-slate-800 p-4 rounded-lg border border-slate-700">
-                                <h4 class="stats-title text-sm font-medium text-white mb-4 flex items-center">
-                                    <i class="fas fa-fire mr-2 text-red-400"></i> Top Performing Clips
-                                </h4>
-                                <div class="stats-list space-y-4">
-                                    <div class="stats-item flex items-center">
-                                        <div class="w-8 h-8 rounded-full bg-red-500 bg-opacity-20 flex items-center justify-center mr-3">
-                                            <i class="fas fa-crown text-red-400 text-xs"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <span class="stats-label block text-sm font-medium">AI Breakthrough Moment</span>
-                                            <span class="stats-value block text-xs text-slate-400">Tech Talk #245</span>
-                                        </div>
-                                        <span class="stats-value text-sm font-medium text-white">1.4k views</span>
-                                    </div>
-                                    <div class="stats-item flex items-center">
-                                        <div class="w-8 h-8 rounded-full bg-purple-500 bg-opacity-20 flex items-center justify-center mr-3">
-                                            <span class="text-purple-400 text-xs font-bold">2</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <span class="stats-label block text-sm font-medium">Quantum Computing Explained</span>
-                                            <span class="stats-value block text-xs text-slate-400">Science Weekly #187</span>
-                                        </div>
-                                        <span class="stats-value text-sm font-medium text-white">982 views</span>
-                                    </div>
-                                    <div class="stats-item flex items-center">
-                                        <div class="w-8 h-8 rounded-full bg-blue-500 bg-opacity-20 flex items-center justify-center mr-3">
-                                            <span class="text-blue-400 text-xs font-bold">3</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <span class="stats-label block text-sm font-medium">Market Trends Analysis</span>
-                                            <span class="stats-value block text-xs text-slate-400">Business Insights #92</span>
-                                        </div>
-                                        <span class="stats-value text-sm font-medium text-white">756 views</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Channel Stats -->
-                            <div class="stats-card bg-slate-800 p-4 rounded-lg border border-slate-700">
-                                <h4 class="stats-title text-sm font-medium text-white mb-4 flex items-center">
-                                    <i class="fas fa-chart-line mr-2 text-blue-400"></i> Channel Growth (24h)
-                                </h4>
-                                <div class="stats-list space-y-4">
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Tech Talk</span>
-                                            <span class="stats-value text-sm font-medium text-green-400">+124</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div class="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-300" style="width: 85%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">5.2k total</div>
-                                    </div>
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Science Weekly</span>
-                                            <span class="stats-value text-sm font-medium text-green-400">+87</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div class="h-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-300" style="width: 72%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">3.8k total</div>
-                                    </div>
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Business Insights</span>
-                                            <span class="stats-value text-sm font-medium text-green-400">+52</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div class="h-2 rounded-full bg-gradient-to-r from-green-500 to-green-300" style="width: 58%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">2.1k total</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- API Usage -->
-                            <div class="stats-card bg-slate-800 p-4 rounded-lg border border-slate-700">
-                                <h4 class="stats-title text-sm font-medium text-white mb-4 flex items-center">
-                                    <i class="fas fa-key mr-2 text-purple-400"></i> API Key Usage
-                                </h4>
-                                <div class="stats-list space-y-4">
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Key 1 (Tech Talk)</span>
-                                            <span class="stats-value text-sm font-medium text-yellow-400">78%</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div class="h-2 rounded-full bg-gradient-to-r from-red-500 to-red-300" style="width: 78%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">Resets in 3h 12m</div>
-                                    </div>
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Key 2 (Science)</span>
-                                            <span class="stats-value text-sm font-medium text-yellow-400">42%</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div class="h-2 rounded-full bg-gradient-to-r from-red-500 to-red-300" style="width: 42%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">Resets in 5h 45m</div>
-                                    </div>
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Key 3 (Business)</span>
-                                            <span class="stats-value text-sm font-medium text-green-400">15%</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div class="h-2 rounded-full bg-gradient-to-r from-red-500 to-red-300" style="width: 15%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">Resets in 1h 30m</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- System Health -->
-                            <div class="stats-card bg-slate-800 p-4 rounded-lg border border-slate-700">
-                                <h4 class="stats-title text-sm font-medium text-white mb-4 flex items-center">
-                                    <i class="fas fa-heartbeat mr-2 text-green-400"></i> System Health
-                                </h4>
-                                <div class="stats-list space-y-4">
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">CPU Usage</span>
-                                            <span id="cpuUsageValue" class="stats-value text-sm font-medium">32%</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div id="cpuUsageBar" class="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-300" style="width: 32%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">4 cores @ 3.2GHz</div>
-                                    </div>
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Memory</span>
-                                            <span id="memoryValue" class="stats-value text-sm font-medium">4.2/16GB</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div id="memoryBar" class="h-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-300" style="width: 26%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">Cache: 1.8GB</div>
-                                    </div>
-                                    <div class="stats-item">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="stats-label text-sm font-medium">Avg. Power</span>
-                                            <span id="powerStatsValue" class="stats-value text-sm font-medium">42W</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-2">
-                                            <div id="powerStatsBar" class="h-2 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-300" style="width: 42%"></div>
-                                        </div>
-                                        <div class="text-xs text-slate-400 mt-1">Peak: 58W</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-slate-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" id="closeStatsModal" class="btn-primary">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- JavaScript for Dashboard Functionality -->
     <script>
-        // DOM Elements
-        const addBrandOverlay = document.getElementById('addBrandOverlay');
-        const brandingOptions = document.getElementById('brandingOptions');
-        const addChannelBtn = document.getElementById('addChannelBtn');
-        const addChannelCardBtn = document.getElementById('addChannelCardBtn');
-        const addChannelModal = document.getElementById('addChannelModal');
-        const cancelAddChannelBtn = document.getElementById('cancelAddChannelBtn');
-        const saveChannelBtn = document.getElementById('saveChannelBtn');
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsDropdown = document.getElementById('settingsDropdown');
-        const manualSyncBtn = document.getElementById('manualSyncBtn');
-        const channelTabs = document.querySelectorAll('.channel-tab');
-        const customRules = document.getElementById('customRules');
-        const customRulesOptions = document.getElementById('customRulesOptions');
-        const hashtagGroup = document.getElementById('hashtagGroup');
-        const customHashtagsGroup = document.getElementById('customHashtagsGroup');
-        const statsModal = document.getElementById('statsModal');
-        const statsBtn = document.getElementById('statsBtn');
-        const closeStatsModal = document.getElementById('closeStatsModal');
-        const viewLogsBtn = document.getElementById('viewLogsBtn');
-        const refreshCountdown = document.getElementById('refreshCountdown');
-        
-        // Dynamic values elements
-        const storageValue = document.getElementById('storageValue');
-        const storageBar = document.getElementById('storageBar');
-        const powerValue = document.getElementById('powerValue');
-        const powerBar = document.getElementById('powerBar');
-        const apiQuotaValue = document.getElementById('apiQuotaValue');
-        const apiQuotaBar = document.getElementById('apiQuotaBar');
-        const lastSyncTime = document.getElementById('lastSyncTime');
-        const topPerformer = document.getElementById('topPerformer');
-        const cpuUsageValue = document.getElementById('cpuUsageValue');
-        const cpuUsageBar = document.getElementById('cpuUsageBar');
-        const memoryValue = document.getElementById('memoryValue');
-        const memoryBar = document.getElementById('memoryBar');
-        const powerStatsValue = document.getElementById('powerStatsValue');
-        const powerStatsBar = document.getElementById('powerStatsBar');
-
-        // Initialize progress bars with animation
-        function initProgressBars() {
-            const progressBars = document.querySelectorAll('.progress-bar');
-            progressBars.forEach(bar => {
-                const targetWidth = bar.style.width;
-                bar.style.width = '0';
-                setTimeout(() => {
-                    bar.style.width = targetWidth;
-                }, 100);
-            });
-        }
-
-        // Channel tabs functionality
-        function setupChannelTabs() {
-            channelTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    channelTabs.forEach(t => t.classList.remove('active', 'bg-slate-800', 'text-primary-500'));
-                    tab.classList.add('active', 'bg-slate-800', 'text-primary-500');
-                    // Here you would filter episodes by channel
-                });
-            });
-        }
-
-        // Modal functionality
-        function setupModals() {
-            const openModal = () => {
-                addChannelModal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            };
-
-            const closeModal = () => {
-                addChannelModal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            };
-
-            addChannelBtn.addEventListener('click', openModal);
-            addChannelCardBtn.addEventListener('click', openModal);
-            cancelAddChannelBtn.addEventListener('click', closeModal);
-
-            // Save channel
-            saveChannelBtn.addEventListener('click', () => {
-                const channelName = document.getElementById('channelName').value;
-                const youtubeUrl = document.getElementById('youtubeUrl').value;
-
-                if (channelName && youtubeUrl) {
-                    // Show loading state
-                    saveChannelBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Saving...';
-                    
-                    // Simulate API call
-                    setTimeout(() => {
-                        // Create notification
-                        const notification = document.createElement('div');
-                        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center animate-float';
-                        notification.innerHTML = `
-                            <i class="fas fa-check-circle mr-2"></i>
-                            <span>Channel "${channelName}" added successfully!</span>
-                        `;
-                        document.body.appendChild(notification);
-                        
-                        // Remove notification after 3 seconds
-                        setTimeout(() => {
-                            notification.remove();
-                        }, 3000);
-                        
-                        // Reset form and close modal
-                        saveChannelBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Save Channel';
-                        closeModal();
-                        document.getElementById('channelForm').reset();
-                    }, 1500);
-                } else {
-                    alert('Please fill in all required fields.');
-                }
-            });
-
-            // Stats modal
-            statsBtn.addEventListener('click', () => {
-                statsModal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            });
-
-            closeStatsModal.addEventListener('click', () => {
-                statsModal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            });
-        }
-
-        // Settings dropdown
-        function setupSettingsDropdown() {
-            settingsBtn.addEventListener('click', () => {
-                settingsDropdown.classList.toggle('hidden');
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!settingsBtn.contains(e.target) && !settingsDropdown.contains(e.target)) {
-                    settingsDropdown.classList.add('hidden');
-                }
-            });
-        }
-
-        // Toggle branding options
-        function setupBrandingToggle() {
-            addBrandOverlay.addEventListener('change', () => {
-                brandingOptions.classList.toggle('hidden', !addBrandOverlay.checked);
-            });
-        }
-
-        // Toggle custom rules
-        function setupCustomRulesToggle() {
-            customRules.addEventListener('change', () => {
-                customRulesOptions.classList.toggle('hidden', !customRules.checked);
-            });
-
-            hashtagGroup.addEventListener('change', () => {
-                customHashtagsGroup.classList.toggle('hidden', hashtagGroup.value !== 'custom');
-            });
-        }
-
-        // View logs button
-        function setupViewLogs() {
-            viewLogsBtn.addEventListener('click', () => {
-                // Show loading state
-                viewLogsBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Loading logs...';
+        class PodcastDashboard {
+            constructor() {
+                this.apiBaseUrl = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:8000' 
+                    : 'https://your-render-app.onrender.com';
                 
-                // Simulate loading logs
-                setTimeout(() => {
-                    viewLogsBtn.innerHTML = '<i class="fas fa-list-alt mr-1"></i> View Logs';
-                    alert('Log viewer would open here with structured JSON logs');
-                }, 1000);
-            });
-        }
+                this.init();
+            }
 
-        // Manual sync button
-        function setupManualSync() {
-            manualSyncBtn.addEventListener('click', () => {
-                manualSyncBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin mr-2"></i><span>Syncing...</span>';
-                lastSyncTime.textContent = 'Syncing...';
+            async init() {
+                await this.loadSystemStats();
+                await this.loadPodcastStats();
+                await this.loadActivities();
+                await this.loadEpisodes();
                 
-                // Simulate different sync times
-                const syncTime = Math.floor(Math.random() * 3000) + 1000;
+                // Set up periodic refresh
+                setInterval(() => this.loadSystemStats(), 30000);
+                setInterval(() => this.loadActivities(), 60000);
+                
+                // Set up event listeners
+                this.setupEventListeners();
+            }
 
-                setTimeout(() => {
-                    manualSyncBtn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i><span>Sync Now</span>';
-                    
-                    // Update last sync time with realistic timestamp
-                    const now = new Date();
-                    const hours = now.getHours().toString().padStart(2, '0');
-                    const minutes = now.getMinutes().toString().padStart(2, '0');
-                    lastSyncTime.textContent = `${hours}:${minutes}`;
-                    
-                    // Show success notification
-                    const notification = document.createElement('div');
-                    notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center animate-float';
-                    notification.innerHTML = `
-                        <i class="fas fa-check-circle mr-2"></i>
-                        <span>Sync completed successfully! 3 new episodes found.</span>
+            async fetchData(endpoint) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}${endpoint}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    return null;
+                }
+            }
+
+            async loadSystemStats() {
+                const data = await this.fetchData('/api/system');
+                if (!data) return;
+
+                // Update CPU
+                if (data.cpu) {
+                    document.getElementById('cpuUsage').textContent = `${data.cpu.percent}%`;
+                    document.getElementById('cpuBar').style.width = `${data.cpu.percent}%`;
+                    document.getElementById('cpuCores').textContent = `${data.cpu.cores} cores`;
+                }
+
+                // Update Memory
+                if (data.memory) {
+                    document.getElementById('memoryUsage').textContent = 
+                        `${data.memory.used} / ${data.memory.total} GB`;
+                    document.getElementById('memoryBar').style.width = 
+                        `${(data.memory.used / data.memory.total * 100).toFixed(1)}%`;
+                }
+
+                // Update Storage
+                if (data.storage) {
+                    document.getElementById('storageUsage').textContent = 
+                        `${data.storage.used} / ${data.storage.total} GB`;
+                    document.getElementById('storageBar').style.width = 
+                        `${data.storage.percent}%`;
+                }
+            }
+
+            async loadPodcastStats() {
+                const data = await this.fetchData('/api/stats');
+                if (!data) return;
+
+                if (data.total_episodes !== undefined) {
+                    document.getElementById('totalEpisodes').textContent = data.total_episodes;
+                }
+                if (data.avg_listeners !== undefined) {
+                    document.getElementById('avgListeners').textContent = data.avg_listeners;
+                }
+                if (data.subscribers !== undefined) {
+                    document.getElementById('totalSubscribers').textContent = data.subscribers;
+                }
+                if (data.next_episode) {
+                    document.getElementById('nextEpisodeTitle').textContent = data.next_episode.title;
+                    document.getElementById('nextEpisodeTime').textContent = data.next_episode.time;
+                }
+            }
+
+            async loadActivities() {
+                const activities = await this.fetchData('/api/activities');
+                if (!activities) return;
+
+                const container = document.getElementById('activitiesContainer');
+                
+                if (activities.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-inbox text-2xl mb-2"></i>
+                            <p>No active tasks</p>
+                        </div>
                     `;
-                    document.body.appendChild(notification);
+                    return;
+                }
 
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 3000);
+                container.innerHTML = activities.map(activity => `
+                    <div class="bg-dark-700/50 rounded-lg p-4 border border-gray-800 smooth-transition hover:bg-dark-700">
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-gray-800/50 p-2 rounded-lg ${this.getActivityColor(activity.type)}">
+                                <i class="fas ${this.getActivityIcon(activity.type)}"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <h3 class="font-medium truncate">${activity.title}</h3>
+                                    <span class="text-xs text-gray-400">${this.formatTime(activity.timestamp)}</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">${activity.description}</p>
+                                <div class="w-full bg-gray-800 rounded-full h-1.5">
+                                    <div class="h-1.5 rounded-full ${this.getProgressColor(activity.progress)} progress-bar" 
+                                         style="width: ${activity.progress}%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-400">${activity.progress}% complete</span>
+                                    ${activity.completed ? 
+                                        '<span class="text-xs text-green-400 flex items-center"><i class="fas fa-check-circle mr-1"></i> Completed</span>' : 
+                                        `<span class="text-xs text-yellow-400">ETA: ${activity.eta}</span>`}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Update last sync time if there are sync activities
+                const syncActivity = activities.find(a => a.type === 'sync');
+                if (syncActivity) {
+                    document.querySelector('#lastSync span').textContent = 
+                        this.formatTime(syncActivity.timestamp);
+                }
+            }
+
+            async loadEpisodes() {
+                const episodes = await this.fetchData('/api/episodes');
+                if (!episodes) return;
+
+                const container = document.getElementById('episodesContainer');
+                
+                if (episodes.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500 col-span-full">
+                            <i class="fas fa-inbox text-2xl mb-2"></i>
+                            <p>No episodes found</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = episodes.map(episode => `
+                    <div class="bg-dark-700/50 rounded-xl p-4 border border-gray-800 smooth-transition hover:bg-dark-700 card-hover">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-medium truncate">${episode.title}</h3>
+                            <span class="text-xs px-2 py-1 rounded-full ${this.getStatusColor(episode.status)}">
+                                ${episode.status}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-400 mb-3">
+                            <span><i class="far fa-clock mr-1"></i> ${episode.duration}</span>
+                            <span><i class="fas fa-headphones mr-1"></i> ${episode.listens}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs ${this.getDateColor(episode.date)}">
+                                ${this.formatDate(episode.date)}
+                            </span>
+                            <div class="flex space-x-2">
+                                <button class="text-gray-400 hover:text-white p-1" data-action="edit" data-id="${episode.id}">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </button>
+                                <button class="text-gray-400 hover:text-white p-1" data-action="stats" data-id="${episode.id}">
+                                    <i class="fas fa-chart-bar text-xs"></i>
+                                </button>
+                                <button class="text-gray-400 hover:text-white p-1" data-action="share" data-id="${episode.id}">
+                                    <i class="fas fa-share-alt text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async triggerSync() {
+                const btn = document.getElementById('syncNowBtn');
+                const originalHtml = btn.innerHTML;
+                
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Syncing...';
+                btn.disabled = true;
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/api/sync`, {
+                        method: 'POST'
+                    });
                     
-                    // Randomly update some metrics
-                    updateDynamicValues();
-                }, syncTime);
-            });
-        }
+                    if (!response.ok) throw new Error('Sync failed');
+                    
+                    const result = await response.json();
+                    
+                    // Show notification
+                    this.showNotification('Sync completed successfully!', 'success');
+                    
+                    // Refresh data
+                    await Promise.all([
+                        this.loadSystemStats(),
+                        this.loadPodcastStats(),
+                        this.loadActivities(),
+                        this.loadEpisodes()
+                    ]);
+                    
+                    return result;
+                } catch (error) {
+                    console.error('Sync error:', error);
+                    this.showNotification('Sync failed: ' + error.message, 'error');
+                    return { success: false, error: error.message };
+                } finally {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
 
-        // Simulate progress updates for current activities
-        function simulateProgressUpdates() {
-            setInterval(() => {
-                const bars = document.querySelectorAll('.progress-bar');
-                bars.forEach(bar => {
-                    const currentWidth = parseInt(bar.style.width);
-                    if (currentWidth < 100) {
-                        const increment = Math.random() > 0.7 ? 5 : 2; // Occasionally bigger jumps
-                        const newWidth = Math.min(currentWidth + increment, 100);
-                        bar.style.width = `${newWidth}%`;
-                        
-                        // Update ETA text
-                        const etaElement = bar.closest('.activity-details').querySelector('.progress-info span:last-child');
-                        if (newWidth < 100) {
-                            const remaining = (100 - newWidth) / (increment * 0.8); // Dynamic ETA based on speed
-                            etaElement.textContent = `ETA: ${Math.ceil(remaining)} min`;
-                        } else {
-                            etaElement.textContent = 'Completed';
-                            bar.classList.add('bg-green-500');
-                        }
+            showNotification(message, type = 'info') {
+                const colors = {
+                    success: 'bg-green-600',
+                    error: 'bg-red-600',
+                    info: 'bg-blue-600'
+                };
+                
+                const notification = document.createElement('div');
+                notification.className = `fixed bottom-4 right-4 ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-float`;
+                notification.innerHTML = `
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            setupEventListeners() {
+                // Sync button
+                document.getElementById('syncNowBtn').addEventListener('click', () => this.triggerSync());
+                
+                // Episode action buttons (delegated)
+                document.getElementById('episodesContainer').addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-action]');
+                    if (!btn) return;
+                    
+                    const action = btn.getAttribute('data-action');
+                    const episodeId = btn.getAttribute('data-id');
+                    
+                    switch (action) {
+                        case 'edit':
+                            this.editEpisode(episodeId);
+                            break;
+                        case 'stats':
+                            this.showStats(episodeId);
+                            break;
+                        case 'share':
+                            this.shareEpisode(episodeId);
+                            break;
                     }
                 });
-            }, 3000);
-        }
+            }
 
-        // Update dynamic values randomly
-        function updateDynamicValues() {
-            // Storage values
-            const storageUsed = (12.4 + Math.random() * 0.8).toFixed(1);
-            const storagePercent = Math.min(95, Math.floor(65 + Math.random() * 10));
-            storageValue.textContent = `${storageUsed}/20 GB`;
-            storageBar.style.width = `${storagePercent}%`;
-            
-            // Power values
-            const powerWatt = Math.floor(40 + Math.random() * 6);
-            const powerPercent = Math.min(90, powerWatt * 0.9);
-            powerValue.textContent = `${powerWatt}W`;
-            powerBar.style.width = `${powerPercent}%`;
-            
-            // API Quota values
-            const apiKeysUsed = Math.floor(3 + Math.random());
-            const apiQuotaPercent = Math.min(95, Math.floor(60 + Math.random() * 15));
-            apiQuotaValue.textContent = `${apiKeysUsed}/5 keys`;
-            apiQuotaBar.style.width = `${apiQuotaPercent}%`;
-            
-            // Top performer
-            const performers = [
-                'Tech Talk (+1.4k views)',
-                'Science Weekly (+982 views)',
-                'Business Insights (+756 views)',
-                'Health Matters (+432 views)'
-            ];
-            topPerformer.textContent = performers[Math.floor(Math.random() * performers.length)];
-            
-            // System stats (for stats modal)
-            if (!statsModal.classList.contains('hidden')) {
-                const cpuPercent = Math.min(90, Math.floor(30 + Math.random() * 20));
-                const memoryUsed = (4.2 + Math.random()).toFixed(1);
-                const memoryPercent = Math.min(90, Math.floor(26 + Math.random() * 15));
-                const powerStats = Math.floor(40 + Math.random() * 8);
-                const powerStatsPercent = Math.min(90, powerStats * 0.9);
+            // Helper methods
+            getActivityIcon(type) {
+                const icons = {
+                    'download': 'fa-download',
+                    'process': 'fa-microchip',
+                    'upload': 'fa-upload',
+                    'sync': 'fa-sync-alt',
+                    'clip': 'fa-cut'
+                };
+                return icons[type] || 'fa-tasks';
+            }
+
+            getActivityColor(type) {
+                const colors = {
+                    'download': 'text-blue-400',
+                    'process': 'text-purple-400',
+                    'upload': 'text-green-400',
+                    'sync': 'text-yellow-400',
+                    'clip': 'text-pink-400'
+                };
+                return colors[type] || 'text-gray-400';
+            }
+
+            getProgressColor(progress) {
+                if (progress >= 100) return 'bg-green-500';
+                return 'bg-gradient-to-r from-blue-500 to-purple-500';
+            }
+
+            getStatusColor(status) {
+                const colors = {
+                    'published': 'bg-green-900/20 text-green-400',
+                    'processing': 'bg-yellow-900/20 text-yellow-400',
+                    'draft': 'bg-gray-700 text-gray-400',
+                    'error': 'bg-red-900/20 text-red-400'
+                };
+                return colors[status] || 'bg-gray-700 text-gray-400';
+            }
+
+            getDateColor(date) {
+                if (date === 'Today') return 'text-blue-400';
+                if (date === 'Yesterday') return 'text-purple-400';
+                return 'text-gray-500';
+            }
+
+            formatTime(timestamp) {
+                if (!timestamp) return 'Just now';
+                const date = new Date(timestamp);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            formatDate(dateStr) {
+                if (!dateStr) return '--';
+                if (dateStr === 'Today' || dateStr === 'Yesterday') return dateStr;
                 
-                cpuUsageValue.textContent = `${cpuPercent}%`;
-                cpuUsageBar.style.width = `${cpuPercent}%`;
-                memoryValue.textContent = `${memoryUsed}/16GB`;
-                memoryBar.style.width = `${memoryPercent}%`;
-                powerStatsValue.textContent = `${powerStats}W`;
-                powerStatsBar.style.width = `${powerStatsPercent}%`;
+                const date = new Date(dateStr);
+                if (isNaN(date)) return dateStr;
+                
+                const now = new Date();
+                const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return 'Today';
+                if (diffDays === 1) return 'Yesterday';
+                if (diffDays < 7) return `${diffDays} days ago`;
+                
+                return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            }
+
+            // Placeholder methods for actions
+            editEpisode(id) {
+                this.showNotification(`Editing episode ${id}`, 'info');
+            }
+
+            showStats(id) {
+                this.showNotification(`Showing stats for episode ${id}`, 'info');
+            }
+
+            shareEpisode(id) {
+                this.showNotification(`Sharing episode ${id}`, 'info');
             }
         }
 
-        // Auto-refresh countdown
-        function setupAutoRefresh() {
-            let countdown = 30;
+        // Initialize the dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const dashboard = new PodcastDashboard();
             
-            setInterval(() => {
-                countdown--;
-                refreshCountdown.textContent = countdown;
-                
-                if (countdown <= 0) {
-                    countdown = 30;
-                    // Simulate refresh
-                    updateDynamicValues();
-                    
-                    // Show refresh indicator
-                    refreshCountdown.classList.add('text-primary-500', 'font-bold');
-                    setTimeout(() => {
-                        refreshCountdown.classList.remove('text-primary-500', 'font-bold');
-                    }, 1000);
-                }
-            }, 1000);
-        }
-
-        // Initialize all functionality
-        function init() {
-            initProgressBars();
-            setupChannelTabs();
-            setupModals();
-            setupSettingsDropdown();
-            setupBrandingToggle();
-            setupCustomRulesToggle();
-            setupViewLogs();
-            setupManualSync();
-            simulateProgressUpdates();
-            setupAutoRefresh();
-            
-            // Initial update of dynamic values
-            updateDynamicValues();
-            
-            // Update dynamic values every 5 seconds
-            setInterval(updateDynamicValues, 5000);
-        }
-
-        // Run initialization when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
+            // Make dashboard available globally for debugging
+            window.dashboard = dashboard;
+        });
     </script>
 </body>
 </html>
