@@ -1,0 +1,6 @@
+fastapi==0.111.0
+uvicorn==0.30.0
+google-api-python-client==2.125.0
+python-multipart==0.0.7
+yt-dlp==2024.6.9
+ffmpeg-python==0.2.0
