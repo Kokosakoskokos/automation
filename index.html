@@ -281,9 +281,8 @@
     <script>
         class PodcastDashboard {
             constructor() {
-                this.apiBaseUrl = window.location.hostname === 'localhost' 
-                    ? 'http://localhost:8000' 
-                    : 'https://your-render-app.onrender.com';
+                // UPDATE REQUIRED: Set your Render service URL here
+                this.apiBaseUrl = 'https://your-render-service.onrender.com';
                 
                 this.init();
             }
